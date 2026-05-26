@@ -148,6 +148,46 @@ footer{
     max-width: 100%;
     height: auto;
 }
+
+/* Style pour le message de profil connecté */
+.profile-status {
+    margin-top: 25px;
+    padding: 12px 15px;
+    background: #e9ecef;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid #dee2e6;
+}
+.profile-status i {
+    margin-right: 8px;
+    color: #6c757d;
+}
+.profile-status span {
+    font-weight: bold;
+    color: #0d6efd;
+}
+.profile-status .admin-badge {
+    background: #212529;
+    color: #ffc107;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-left: 8px;
+}
+.profile-status .user-badge {
+    background: #e9ecef;
+    color: #6c757d;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-left: 8px;
+}
 </style>
 </head>
 <body>
@@ -218,6 +258,15 @@ footer{
                 <i class="fa fa-user-gear me-2 text-secondary"></i> Changer de profil
             </button>
         </div>
+    </div>
+
+    <!-- Message indiquant le profil connecté -->
+    <div class="profile-status" id="profileStatusMessage">
+        <i class="fa fa-circle-info"></i> Vous êtes connecté en tant que : 
+        <span id="profilConnecteLabel">Utilisateur</span>
+        <span id="profilBadge" class="user-badge">
+            <i class="fa fa-user me-1"></i>Accès limité
+        </span>
     </div>
 </div>
 
@@ -339,6 +388,26 @@ let articles = [];
 let originalDesignationTemp = null; 
 let profilActuel = "user";
 
+// Fonction pour mettre à jour l'affichage du profil connecté
+function mettreAJourAffichageProfil() {
+    const profilLabel = document.getElementById("profilConnecteLabel");
+    const profilBadge = document.getElementById("profilBadge");
+    
+    if (profilLabel && profilBadge) {
+        if (profilActuel === "admin") {
+            profilLabel.innerHTML = "Administrateur";
+            profilLabel.style.color = "#0d6efd";
+            profilBadge.innerHTML = '<i class="fa fa-user-shield me-1"></i>Accès complet';
+            profilBadge.className = "admin-badge";
+        } else {
+            profilLabel.innerHTML = "Utilisateur";
+            profilLabel.style.color = "#0d6efd";
+            profilBadge.innerHTML = '<i class="fa fa-user me-1"></i>Accès limité';
+            profilBadge.className = "user-badge";
+        }
+    }
+}
+
 function showLoading(show) {
     document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
 }
@@ -357,6 +426,7 @@ async function loadArticles() {
 function choisirProfil(role) {
     if (role === 'user') {
         profilActuel = "user";
+        mettreAJourAffichageProfil();
         basculerEcranApplication();
     } else if (role === 'admin') {
         Swal.fire({
@@ -378,6 +448,7 @@ function choisirProfil(role) {
         }).then(result => {
             if (result.value === "Seddik") {
                 profilActuel = "admin";
+                mettreAJourAffichageProfil();
                 basculerEcranApplication();
             } else if (result.value !== undefined) {
                 Swal.fire({
@@ -409,6 +480,7 @@ function verifierAcces(targetCanvasId) {
 function basculerEcranApplication() {
     document.getElementById("profileSelectionScreen").style.display = "none";
     document.getElementById("mainApplicationScreen").style.display = "block";
+    mettreAJourAffichageProfil();
 }
 
 function ouvrirChangementProfil() {
@@ -515,16 +587,15 @@ function rechercher(){
         container.insertAdjacentHTML('beforeend', cardHtml);
         
         try {
-            // Configuration de JsBarcode pour afficher le numéro textuel sous le code-barres
             JsBarcode(`#${barcodeId}`, a.code.toString(), {
                 format: "CODE128",
                 lineColor: "#000000",
                 width: 2,
                 height: 65,
-                displayValue: true,    // ACTIVÉ : Affiche le numéro sous le code-barres
-                fontSize: 16,          // Taille du texte du numéro
-                fontOptions: "bold",   // Style en gras pour une lecture rapide
-                textMargin: 4          // Espace entre les barres et le numéro
+                displayValue: true,
+                fontSize: 16,
+                fontOptions: "bold",
+                textMargin: 4
             });
         } catch(err) {
             console.error("Erreur lors de la génération du code-barres: ", err);
@@ -660,6 +731,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     document.getElementById("profileSelectionScreen").style.display = "flex";
+    mettreAJourAffichageProfil();
 
     document.getElementById('addCanvas').addEventListener('hidden.bs.offcanvas', resetAddFields);
     document.getElementById('searchCanvas').addEventListener('hidden.bs.offcanvas', resetSearchFields);
